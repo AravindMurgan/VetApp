@@ -1,3 +1,9 @@
-import { SHARED_PACKAGE_NAME } from "@vetlog/shared";
+import "dotenv/config";
+import { createApp } from "./app";
 
-console.log(`vetlog api scaffold (using ${SHARED_PACKAGE_NAME})`);
+const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+const app = createApp();
+
+app.listen(port, () => {
+  console.log(`vetlog api listening on port ${port}`);
+});
