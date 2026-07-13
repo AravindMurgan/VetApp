@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App } from "./App";
 
 vi.mock("./auth/auth-context", () => ({
@@ -13,13 +14,24 @@ vi.mock("./auth/auth-context", () => ({
   }),
 }));
 
-describe("App bottom tab navigation", () => {
-  it("renders all four tabs", () => {
-    render(
+vi.mock("./lib/api-client", () => ({
+  apiRequest: vi.fn().mockResolvedValue({ patients: [] }),
+}));
+
+function renderApp() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  return render(
+    <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={["/today"]}>
         <App />
-      </MemoryRouter>,
-    );
+      </MemoryRouter>
+    </QueryClientProvider>,
+  );
+}
+
+describe("App bottom tab navigation", () => {
+  it("renders all four tabs", () => {
+    renderApp();
 
     expect(screen.getByRole("heading", { name: "Today" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /today/i })).toBeInTheDocument();
@@ -30,11 +42,7 @@ describe("App bottom tab navigation", () => {
 
   it("navigates to the Patients page when its tab is clicked", async () => {
     const user = userEvent.setup();
-    render(
-      <MemoryRouter initialEntries={["/today"]}>
-        <App />
-      </MemoryRouter>,
-    );
+    renderApp();
 
     await user.click(screen.getByRole("link", { name: /patients/i }));
 
@@ -43,11 +51,7 @@ describe("App bottom tab navigation", () => {
 
   it("navigates to the Follow-ups page when its tab is clicked", async () => {
     const user = userEvent.setup();
-    render(
-      <MemoryRouter initialEntries={["/today"]}>
-        <App />
-      </MemoryRouter>,
-    );
+    renderApp();
 
     await user.click(screen.getByRole("link", { name: /follow-ups/i }));
 
