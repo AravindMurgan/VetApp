@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r run typecheck",
     "db:migrate": "pnpm --filter @vetlog/api run db:migrate",
-    "db:generate": "pnpm --filter @vetlog/api run db:generate"
+    "db:generate": "pnpm --filter @vetlog/api run db:generate",
+    "db:seed": "pnpm --filter @vetlog/api run db:seed"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",

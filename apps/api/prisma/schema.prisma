@@ -171,6 +171,8 @@ model VaccineSchedule {
   doses       Json
   isPreset    Boolean @default(true)
   isActive    Boolean @default(true)
+
+  @@unique([species, vaccineName])
 }
 
 model VaccinationRecord {
@@ -187,7 +189,7 @@ model VaccinationRecord {
 
 model CaseTemplate {
   id       String   @id @default(uuid())
-  name     String
+  name     String   @unique
   caseType CaseType
   species  Species?
   defaults Json

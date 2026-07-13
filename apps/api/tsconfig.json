@@ -2,10 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
     "types": ["node"]
   },
-  "include": ["src"]
+  "include": ["src", "prisma", "vitest.config.ts", "vitest.setup.ts"]
 }
