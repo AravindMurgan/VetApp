@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  clinicName   String
+  createdAt    DateTime @default(now())
+}
+
+model Owner {
+  id        String    @id @default(uuid())
+  name      String
+  phone     String    @unique
+  altPhone  String?
+  address   String?
+  notes     String?
+  patients  Patient[]
+  createdAt DateTime  @default(now())
+}
+
+enum Species {
+  DOG
+  CAT
+  RABBIT
+  BIRD
+  OTHER
+}
+
+enum Sex {
+  MALE
+  FEMALE
+  MALE_NEUTERED
+  FEMALE_SPAYED
+  UNKNOWN
+}
+
+enum PatientStatus {
+  ACTIVE
+  DECEASED
+  INACTIVE
+}
+
+model Patient {
+  id            String              @id @default(uuid())
+  owner         Owner               @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  name          String
+  species       Species
+  breed         String?
+  sex           Sex                 @default(UNKNOWN)
+  dateOfBirth   DateTime?
+  ageIsApprox   Boolean             @default(false)
+  colorMarkings String?
+  microchipId   String?
+  status        PatientStatus       @default(ACTIVE)
+  cases         Case[]
+  weights       WeightEntry[]
+  vaccinations  VaccinationRecord[]
+  createdAt     DateTime            @default(now())
+
+  @@index([name])
+  @@index([ownerId])
+}
+
+model WeightEntry {
+  id         String   @id @default(uuid())
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  patientId  String
+  weightKg   Decimal  @db.Decimal(5, 2)
+  recordedAt DateTime @default(now())
+  caseId     String?
+}
+
+enum CaseType {
+  CONSULTATION
+  VACCINATION
+  SURGERY
+  EMERGENCY
+  FOLLOW_UP
+  GROOMING_HEALTH_CHECK
+}
+
+enum CaseStatus {
+  OPEN
+  CLOSED
+}
+
+model Case {
+  id            String       @id @default(uuid())
+  patient       Patient      @relation(fields: [patientId], references: [id])
+  patientId     String
+  type          CaseType
+  status        CaseStatus   @default(OPEN)
+  visitDate     DateTime     @default(now())
+  complaint     String?
+  temperatureC  Decimal?     @db.Decimal(4, 1)
+  heartRate     Int?
+  respRate      Int?
+  clinicalNotes String?
+  diagnosis     String?
+  templateId    String?
+  treatments    Treatment[]
+  attachments   Attachment[]
+  followUps     FollowUp[]
+  prescription  Prescription?
+  createdAt     DateTime     @default(now())
+
+  @@index([patientId, visitDate])
+  @@index([visitDate])
+}
+
+model Treatment {
+  id           String  @id @default(uuid())
+  case         Case    @relation(fields: [caseId], references: [id])
+  caseId       String
+  drugName     String
+  dose         String
+  route        String?
+  frequency    String?
+  durationDays Int?
+  instructions String?
+  isProcedure  Boolean @default(false)
+}
+
+model Prescription {
+  id        String    @id @default(uuid())
+  case      Case      @relation(fields: [caseId], references: [id])
+  caseId    String    @unique
+  pdfUrl    String?
+  printedAt DateTime?
+}
+
+enum FollowUpReason {
+  REVISIT
+  VACCINE_DUE
+  SUTURE_REMOVAL
+  RECHECK
+  MEDICATION_REVIEW
+}
+
+enum FollowUpStatus {
+  PENDING
+  DONE
+  MISSED
+}
+
+model FollowUp {
+  id        String         @id @default(uuid())
+  case      Case?          @relation(fields: [caseId], references: [id])
+  caseId    String?
+  patientId String
+  dueDate   DateTime
+  reason    FollowUpReason
+  notes     String?
+  status    FollowUpStatus @default(PENDING)
+
+  @@index([status, dueDate])
+}
+
+model VaccineSchedule {
+  id          String  @id @default(uuid())
+  species     Species
+  vaccineName String
+  doses       Json
+  isPreset    Boolean @default(true)
+  isActive    Boolean @default(true)
+}
+
+model VaccinationRecord {
+  id          String    @id @default(uuid())
+  patient     Patient   @relation(fields: [patientId], references: [id])
+  patientId   String
+  vaccineName String
+  doseLabel   String
+  givenAt     DateTime
+  batchNo     String?
+  nextDueAt   DateTime?
+  caseId      String?
+}
+
+model CaseTemplate {
+  id       String   @id @default(uuid())
+  name     String
+  caseType CaseType
+  species  Species?
+  defaults Json
+  isActive Boolean  @default(true)
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  case      Case     @relation(fields: [caseId], references: [id])
+  caseId    String
+  url       String
+  thumbUrl  String?
+  createdAt DateTime @default(now())
+}
