@@ -4,3 +4,4 @@ export * from "./schemas/auth";
 export * from "./schemas/enums";
 export * from "./schemas/owner";
 export * from "./schemas/patient";
+export * from "./schemas/search";

@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import { healthRouter } from "./routes/health";
 import { authRouter } from "./routes/auth";
 import { meRouter } from "./routes/me";
+import { ownersRouter } from "./routes/owners";
+import { patientsRouter } from "./routes/patients";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(): Express {
@@ -22,6 +24,8 @@ export function createApp(): Express {
   app.use("/api/v1", healthRouter);
   app.use("/api/v1/auth", authRouter);
   app.use("/api/v1", meRouter);
+  app.use("/api/v1/owners", ownersRouter);
+  app.use("/api/v1/patients", patientsRouter);
 
   app.use(errorHandler);
 
