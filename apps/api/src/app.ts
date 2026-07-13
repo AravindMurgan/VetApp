@@ -14,7 +14,12 @@ export function createApp(): Express {
   const app = express();
 
   app.use(helmet());
-  app.use(cors({ credentials: true }));
+  app.use(
+    cors({
+      origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+      credentials: true,
+    }),
+  );
   app.use(morgan("dev"));
   app.use(express.json());
   app.use(cookieParser());

@@ -8,3 +8,7 @@ build/
 .DS_Store
 .turbo/
 coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
