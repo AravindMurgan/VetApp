@@ -1,0 +1,17 @@
+{
+  "name": "@vetlog/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"api dev server not yet implemented\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"no tests yet\""
+  },
+  "dependencies": {
+    "@vetlog/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0"
+  }
+}

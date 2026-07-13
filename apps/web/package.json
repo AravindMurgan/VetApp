@@ -1,0 +1,14 @@
+{
+  "name": "@vetlog/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo \"web dev server not yet implemented\"",
+    "typecheck": "tsc --noEmit",
+    "test": "echo \"no tests yet\""
+  },
+  "dependencies": {
+    "@vetlog/shared": "workspace:*"
+  }
+}
