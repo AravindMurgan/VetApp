@@ -5,3 +5,7 @@ export * from "./schemas/enums";
 export * from "./schemas/owner";
 export * from "./schemas/patient";
 export * from "./schemas/search";
+export * from "./schemas/treatment";
+export * from "./schemas/weight-entry";
+export * from "./schemas/follow-up";
+export * from "./schemas/case";
