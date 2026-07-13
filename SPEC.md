@@ -33,7 +33,8 @@ Multi-vet support · billing/inventory · owner-facing portal · lab integration
 
 ```prisma
 generator client { provider = "prisma-client-js" }
-datasource db { provider = "postgresql"; url = env("DATABASE_URL") }
+datasource db { provider = "postgresql" }
+// Note: on Prisma 7+, the connection url lives in prisma.config.ts, not here — see §9.
 
 model User {
   id           String  @id @default(uuid())
@@ -243,7 +244,9 @@ GET    /export/patients.csv
 
 - **Monorepo:** pnpm workspaces — `apps/web`, `apps/api`, `packages/shared` (zod schemas + TS types shared client/server)
 - **Frontend:** React 18, Vite + `vite-plugin-pwa`, React Router, TanStack Query, react-hook-form + zod, Tailwind
-- **Backend:** Express + TS, Prisma, zod validation middleware, JWT (httpOnly refresh cookie)
+- **Backend:** Express + TS, Prisma (v7+), zod validation middleware, JWT (httpOnly refresh cookie)
+  - Prisma 7 moved the datasource connection URL out of `schema.prisma` — it's now set in `apps/api/prisma.config.ts` (loads `DATABASE_URL` via `dotenv/config`). The `datasource db { provider = "postgresql" }` block in §4 has no inline `url`.
+  - Local dev Postgres (via `docker-compose.yml`) is mapped to host port **5433**, not the default 5432, to avoid clashing with other Postgres containers on the same machine. `apps/api/.env.example` reflects this.
 - **PDF:** server-side generation (e.g., pdf-lib or Puppeteer-lite approach via @react-pdf/renderer) — or simpler v1: dedicated print-stylesheet route and rely on browser "Save as PDF"
 - **Infra (all free tier):** Neon (Postgres), Render/Railway (API), Vercel (web), Cloudflare R2 (photos, 10 GB free)
 - **Backups:** nightly `pg_dump` via GitHub Actions cron → R2. Medical data; non-negotiable.
