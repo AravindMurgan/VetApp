@@ -21,7 +21,7 @@ describe("POST /cases/:id/attachments", () => {
     const owner = await prisma.owner.create({
       data: {
         name: "Attachment Test Owner",
-        phone: "5557770001",
+        phone: "5557770009",
         patients: { create: { name: "Attachment Test Pet", species: "DOG" } },
       },
       include: { patients: true },

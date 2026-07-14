@@ -14,6 +14,7 @@ import { caseTemplatesRouter } from "./routes/case-templates";
 import { treatmentsRouter } from "./routes/treatments";
 import { followUpsRouter } from "./routes/follow-ups";
 import { vaccineSchedulesRouter } from "./routes/vaccine-schedules";
+import { exportRouter } from "./routes/export";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(): Express {
@@ -43,6 +44,7 @@ export function createApp(): Express {
   app.use("/api/v1/treatments", treatmentsRouter);
   app.use("/api/v1/followups", followUpsRouter);
   app.use("/api/v1/vaccine-schedules", vaccineSchedulesRouter);
+  app.use("/api/v1/export", exportRouter);
 
   app.use(errorHandler);
 
