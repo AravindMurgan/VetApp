@@ -1,6 +1,7 @@
 import { Router, type Response } from "express";
-import { loginRequestSchema } from "@vetlog/shared";
+import { loginRequestSchema, registerRequestSchema } from "@vetlog/shared";
 import { validateBody } from "../middleware/validate";
+import { requireAuth } from "../middleware/auth";
 import { AppError } from "../errors/app-error";
 import { REFRESH_TOKEN_TTL_SECONDS } from "../lib/jwt";
 import * as authService from "../services/auth-service";
@@ -41,4 +42,17 @@ authRouter.post("/refresh", async (req, res) => {
 authRouter.post("/logout", (_req, res) => {
   res.clearCookie(REFRESH_COOKIE_NAME, { path: REFRESH_COOKIE_PATH });
   res.status(204).send();
+});
+
+// Gated: only an already-authenticated user can create another account. This
+// is a shared-clinic staff invite, not public self-serve signup — VetLog holds
+// patient medical records, so account creation is never exposed unauthenticated.
+authRouter.post("/register", requireAuth, validateBody(registerRequestSchema), async (req, res) => {
+  const { email, password, clinicName } = req.body as {
+    email: string;
+    password: string;
+    clinicName: string;
+  };
+  const user = await authService.register(email, password, clinicName);
+  res.status(201).json(user);
 });

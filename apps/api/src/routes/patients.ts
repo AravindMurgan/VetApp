@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { patientCreateSchema, patientUpdateSchema } from "@vetlog/shared";
+import { caseCreateSchema, patientCreateSchema, patientUpdateSchema } from "@vetlog/shared";
 import { validateBody } from "../middleware/validate";
 import { requireAuth } from "../middleware/auth";
 import { AppError } from "../errors/app-error";
 import { requireParam } from "../lib/require-param";
 import * as patientService from "../services/patient-service";
+import * as caseService from "../services/case-service";
 
 export const patientsRouter: Router = Router();
 
@@ -35,4 +36,9 @@ patientsRouter.patch("/:id", validateBody(patientUpdateSchema), async (req, res)
 
 patientsRouter.delete("/:id", () => {
   throw new AppError(405, "METHOD_NOT_ALLOWED", "Patients cannot be deleted; update status instead");
+});
+
+patientsRouter.post("/:id/cases", validateBody(caseCreateSchema), async (req, res) => {
+  const createdCase = await caseService.createCase(requireParam(req, "id"), req.body);
+  res.status(201).json(createdCase);
 });

@@ -9,3 +9,4 @@ export * from "./schemas/treatment";
 export * from "./schemas/weight-entry";
 export * from "./schemas/follow-up";
 export * from "./schemas/case";
+export * from "./schemas/dashboard";

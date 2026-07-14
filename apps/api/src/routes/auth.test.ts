@@ -3,11 +3,13 @@ import request from "supertest";
 import bcrypt from "bcrypt";
 import { createApp } from "../app";
 import { prisma } from "../lib/prisma-client";
+import { signTestAccessToken } from "../test-utils/auth";
 
 const TEST_EMAIL = "auth-test@vetlog.local";
 const TEST_PASSWORD = "correct-horse-battery-staple";
 
 const app = createApp();
+const authHeader = `Bearer ${signTestAccessToken()}`;
 
 describe("auth", () => {
   beforeAll(async () => {
@@ -87,5 +89,55 @@ describe("auth", () => {
     const response = await request(app).post("/api/v1/auth/refresh");
 
     expect(response.status).toBe(401);
+  });
+
+  describe("register", () => {
+    const NEW_USER_EMAIL = "new-staff@vetlog.local";
+
+    afterAll(async () => {
+      await prisma.user.delete({ where: { email: NEW_USER_EMAIL } }).catch(() => undefined);
+    });
+
+    it("rejects registration attempts with no access token", async () => {
+      const response = await request(app)
+        .post("/api/v1/auth/register")
+        .send({ email: NEW_USER_EMAIL, password: "another-long-password", clinicName: "VetLog Clinic" });
+
+      expect(response.status).toBe(401);
+    });
+
+    it("creates a new user account for an already-authenticated caller", async () => {
+      const response = await request(app)
+        .post("/api/v1/auth/register")
+        .set("Authorization", authHeader)
+        .send({ email: NEW_USER_EMAIL, password: "another-long-password", clinicName: "VetLog Clinic" });
+
+      expect(response.status).toBe(201);
+      expect(response.body.email).toBe(NEW_USER_EMAIL);
+      expect(response.body.clinicName).toBe("VetLog Clinic");
+      expect(response.body).not.toHaveProperty("passwordHash");
+
+      const created = await prisma.user.findUnique({ where: { email: NEW_USER_EMAIL } });
+      expect(created).not.toBeNull();
+    });
+
+    it("rejects a duplicate email with 409", async () => {
+      const response = await request(app)
+        .post("/api/v1/auth/register")
+        .set("Authorization", authHeader)
+        .send({ email: TEST_EMAIL, password: "another-long-password", clinicName: "VetLog Clinic" });
+
+      expect(response.status).toBe(409);
+      expect(response.body.error.code).toBe("EMAIL_CONFLICT");
+    });
+
+    it("rejects an invalid registration payload with 400", async () => {
+      const response = await request(app)
+        .post("/api/v1/auth/register")
+        .set("Authorization", authHeader)
+        .send({ email: "not-an-email", password: "short", clinicName: "" });
+
+      expect(response.status).toBe(400);
+    });
   });
 });

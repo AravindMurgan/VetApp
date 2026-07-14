@@ -23,3 +23,13 @@ export const refreshResponseSchema = z.object({
   accessToken: z.string(),
 });
 export type RefreshResponse = z.infer<typeof refreshResponseSchema>;
+
+export const registerRequestSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  clinicName: z.string().trim().min(1).max(120),
+});
+export type RegisterRequest = z.infer<typeof registerRequestSchema>;
+
+export const registerResponseSchema = authUserSchema;
+export type RegisterResponse = z.infer<typeof registerResponseSchema>;

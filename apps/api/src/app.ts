@@ -8,6 +8,8 @@ import { authRouter } from "./routes/auth";
 import { meRouter } from "./routes/me";
 import { ownersRouter } from "./routes/owners";
 import { patientsRouter } from "./routes/patients";
+import { casesRouter } from "./routes/cases";
+import { dashboardRouter } from "./routes/dashboard";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(): Express {
@@ -31,6 +33,8 @@ export function createApp(): Express {
   app.use("/api/v1", meRouter);
   app.use("/api/v1/owners", ownersRouter);
   app.use("/api/v1/patients", patientsRouter);
+  app.use("/api/v1/cases", casesRouter);
+  app.use("/api/v1/dashboard", dashboardRouter);
 
   app.use(errorHandler);
 

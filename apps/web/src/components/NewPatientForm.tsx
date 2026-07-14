@@ -97,11 +97,17 @@ export function NewPatientForm({ onCreated }: { onCreated: () => void }) {
   });
 
   async function onSubmit(values: FormValues) {
-    if (existingOwner) {
-      await createPatientMutation.mutateAsync(values);
-    } else {
-      await createOwnerMutation.mutateAsync(values);
+    try {
+      if (existingOwner) {
+        await createPatientMutation.mutateAsync(values);
+      } else {
+        await createOwnerMutation.mutateAsync(values);
+      }
+    } catch {
+      // Surfaced to the user via createOwnerMutation.error / createPatientMutation.error below.
+      return;
     }
+
     await queryClient.invalidateQueries({ queryKey: ["patients"] });
     reset();
     setExistingOwner(null);
