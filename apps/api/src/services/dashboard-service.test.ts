@@ -60,3 +60,43 @@ describe("getDashboardToday timezone boundary", () => {
     expect(london.date).toBe("2026-07-13");
   });
 });
+
+describe("getDashboardToday due-today follow-ups", () => {
+  const createdIds: string[] = [];
+
+  afterAll(async () => {
+    await prisma.followUp.deleteMany({ where: { patientId: { in: createdIds } } });
+    await prisma.patient.deleteMany({ where: { ownerId: { in: createdIds } } });
+    await prisma.owner.deleteMany({ where: { id: { in: createdIds } } });
+  });
+
+  it("includes the owner's phone number for a call-owner button", async () => {
+    const owner = await prisma.owner.create({
+      data: {
+        name: "Follow-up Test Owner",
+        phone: "5556660002",
+        patients: { create: { name: "Follow-up Test Pet", species: "CAT" } },
+      },
+      include: { patients: true },
+    });
+    createdIds.push(owner.id);
+    const patientId = owner.patients[0]!.id;
+
+    const now = new Date("2026-07-13T10:00:00.000Z");
+    await prisma.followUp.create({
+      data: {
+        patientId,
+        dueDate: now,
+        reason: "RECHECK",
+        status: "PENDING",
+      },
+    });
+
+    const result = await getDashboardToday("Asia/Kolkata", now);
+    const match = result.followUpsDueToday.find((f) => f.patientId === patientId);
+
+    expect(match).toBeDefined();
+    expect(match?.owner.phone).toBe("5556660002");
+    expect(match?.patient.name).toBe("Follow-up Test Pet");
+  });
+});

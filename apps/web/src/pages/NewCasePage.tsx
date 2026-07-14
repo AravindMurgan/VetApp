@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,7 @@ export default function NewCasePage() {
   const [step, setStep] = useState(1);
   const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const formMethods = useForm<CaseFormInput, unknown, CaseFormOutput>({
     resolver: zodResolver(caseFormSchema),
@@ -62,6 +63,14 @@ export default function NewCasePage() {
   }
 
   async function onSubmit(values: CaseFormOutput) {
+    // Guards against a form submission being dispatched more than once for a
+    // single Save tap (observed with react-hook-form's handleSubmit wrapper),
+    // which would otherwise create duplicate cases.
+    if (isSubmittingRef.current) {
+      return;
+    }
+    isSubmittingRef.current = true;
+
     const { weightKg, ...rest } = values;
     const payload: CaseCreate = {
       ...rest,
@@ -71,6 +80,7 @@ export default function NewCasePage() {
     try {
       await createCaseMutation.mutateAsync(payload);
     } catch {
+      isSubmittingRef.current = false;
       return;
     }
 

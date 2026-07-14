@@ -15,7 +15,13 @@ vi.mock("./auth/auth-context", () => ({
 }));
 
 vi.mock("./lib/api-client", () => ({
-  apiRequest: vi.fn().mockResolvedValue({ patients: [] }),
+  apiRequest: vi.fn().mockResolvedValue({
+    patients: [],
+    date: "2026-07-13",
+    casesToday: [],
+    followUpsDueToday: [],
+    followUpCounts: { dueToday: 0, overdue: 0 },
+  }),
 }));
 
 function renderApp() {

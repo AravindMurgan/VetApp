@@ -25,7 +25,20 @@ describe("dashboardTodayResponseSchema", () => {
           patient: { id: VALID_UUID, name: "Bruno", species: "DOG" },
         },
       ],
-      followUpCounts: { dueToday: 2, overdue: 1 },
+      followUpsDueToday: [
+        {
+          id: VALID_UUID,
+          caseId: null,
+          patientId: VALID_UUID,
+          dueDate: "2026-07-13T00:00:00.000Z",
+          reason: "VACCINE_DUE",
+          notes: null,
+          status: "PENDING",
+          patient: { id: VALID_UUID, name: "Bruno", species: "DOG" },
+          owner: { id: VALID_UUID, name: "Priya Sharma", phone: "9876543210" },
+        },
+      ],
+      followUpCounts: { dueToday: 1, overdue: 1 },
     });
 
     expect(result.success).toBe(true);
@@ -35,6 +48,7 @@ describe("dashboardTodayResponseSchema", () => {
     const result = dashboardTodayResponseSchema.safeParse({
       date: "2026-07-13",
       casesToday: [],
+      followUpsDueToday: [],
       followUpCounts: { dueToday: 0, overdue: 0 },
     });
 
@@ -45,6 +59,7 @@ describe("dashboardTodayResponseSchema", () => {
     const result = dashboardTodayResponseSchema.safeParse({
       date: "2026-07-13",
       casesToday: [],
+      followUpsDueToday: [],
     });
 
     expect(result.success).toBe(false);

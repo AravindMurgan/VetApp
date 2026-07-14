@@ -7,18 +7,10 @@ import {
   type Species,
 } from "@vetlog/shared";
 import { apiRequest } from "../../lib/api-client";
+import { CASE_TYPE_LABELS } from "../../lib/case-type-labels";
 import type { CaseFormInput } from "../../pages/new-case/form-types";
 
 const CASE_TYPE_OPTIONS = caseTypeSchema.options;
-
-const CASE_TYPE_LABELS: Record<(typeof CASE_TYPE_OPTIONS)[number], string> = {
-  CONSULTATION: "Consultation",
-  VACCINATION: "Vaccination",
-  SURGERY: "Surgery",
-  EMERGENCY: "Emergency",
-  FOLLOW_UP: "Follow-up",
-  GROOMING_HEALTH_CHECK: "Grooming / health check",
-};
 
 interface CaseTypeStepProps {
   patientSpecies: Species;

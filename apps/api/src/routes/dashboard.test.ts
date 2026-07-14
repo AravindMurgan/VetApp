@@ -13,6 +13,7 @@ describe("GET /api/v1/dashboard/today", () => {
     expect(response.status).toBe(200);
     expect(typeof response.body.date).toBe("string");
     expect(Array.isArray(response.body.casesToday)).toBe(true);
+    expect(Array.isArray(response.body.followUpsDueToday)).toBe(true);
     expect(typeof response.body.followUpCounts.dueToday).toBe("number");
     expect(typeof response.body.followUpCounts.overdue).toBe("number");
   });

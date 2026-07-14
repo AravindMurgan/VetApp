@@ -8,6 +8,6 @@ test("login lands on the Today page", async ({ page }) => {
   await page.getByRole("button", { name: /log in/i }).click();
 
   await expect(page).toHaveURL(/\/today$/);
-  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /patients/i })).toBeVisible();
 });
