@@ -113,3 +113,45 @@ export async function updateCase(id: string, input: CaseUpdate) {
     throw error;
   }
 }
+
+/**
+ * Everything the printable prescription view needs: the case, its treatments,
+ * the patient + owner block, a recheck date (this case's FollowUp with
+ * reason RECHECK, if any), and the requesting user's clinic letterhead details.
+ */
+export async function getCasePrescription(id: string, userId: string) {
+  const foundCase = await prisma.case.findUnique({
+    where: { id },
+    include: {
+      treatments: true,
+      followUps: true,
+      patient: { include: { owner: true } },
+    },
+  });
+  if (!foundCase) {
+    throw new AppError(404, "CASE_NOT_FOUND", "Case not found");
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) {
+    throw new AppError(404, "USER_NOT_FOUND", "User not found");
+  }
+
+  const { treatments, followUps, patient, ...caseFields } = foundCase;
+  const { owner, ...patientFields } = patient;
+  const recheckFollowUp = followUps.find((followUp) => followUp.reason === "RECHECK") ?? null;
+
+  return {
+    case: caseFields,
+    treatments,
+    recheckFollowUp,
+    patient: patientFields,
+    owner,
+    clinic: {
+      clinicName: user.clinicName,
+      clinicAddress: user.clinicAddress,
+      clinicPhone: user.clinicPhone,
+      vetRegistrationNumber: user.vetRegistrationNumber,
+    },
+  };
+}

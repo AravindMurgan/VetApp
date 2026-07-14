@@ -7,11 +7,14 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  email        String   @unique
-  passwordHash String
-  clinicName   String
-  createdAt    DateTime @default(now())
+  id                     String   @id @default(uuid())
+  email                  String   @unique
+  passwordHash           String
+  clinicName             String
+  clinicAddress          String?
+  clinicPhone            String?
+  vetRegistrationNumber  String?
+  createdAt              DateTime @default(now())
 }
 
 model Owner {

@@ -1,7 +1,8 @@
 import bcrypt from "bcrypt";
+import type { User } from "@prisma/client";
 import { prisma } from "../lib/prisma-client";
 import { AppError } from "../errors/app-error";
-import { isUniqueConstraintError } from "../lib/prisma-errors";
+import { isUniqueConstraintError, isRecordNotFoundError } from "../lib/prisma-errors";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../lib/jwt";
 
 const INVALID_CREDENTIALS_MESSAGE = "Invalid email or password";
@@ -10,10 +11,30 @@ const PASSWORD_HASH_ROUNDS = 10;
 
 const EMAIL_CONFLICT_MESSAGE = "A user with this email already exists";
 
+export interface AuthUserFields {
+  id: string;
+  email: string;
+  clinicName: string;
+  clinicAddress: string | null;
+  clinicPhone: string | null;
+  vetRegistrationNumber: string | null;
+}
+
+function toAuthUserFields(user: User): AuthUserFields {
+  return {
+    id: user.id,
+    email: user.email,
+    clinicName: user.clinicName,
+    clinicAddress: user.clinicAddress,
+    clinicPhone: user.clinicPhone,
+    vetRegistrationNumber: user.vetRegistrationNumber,
+  };
+}
+
 export interface LoginResult {
   accessToken: string;
   refreshToken: string;
-  user: { id: string; email: string; clinicName: string };
+  user: AuthUserFields;
 }
 
 export async function login(email: string, password: string): Promise<LoginResult> {
@@ -30,7 +51,7 @@ export async function login(email: string, password: string): Promise<LoginResul
   return {
     accessToken: signAccessToken({ sub: user.id, email: user.email }),
     refreshToken: signRefreshToken({ sub: user.id }),
-    user: { id: user.id, email: user.email, clinicName: user.clinicName },
+    user: toAuthUserFields(user),
   };
 }
 
@@ -58,11 +79,7 @@ export async function refresh(refreshToken: string): Promise<RefreshResult> {
   };
 }
 
-export interface RegisterResult {
-  id: string;
-  email: string;
-  clinicName: string;
-}
+export type RegisterResult = AuthUserFields;
 
 export async function register(
   email: string,
@@ -75,10 +92,30 @@ export async function register(
     const user = await prisma.user.create({
       data: { email, passwordHash, clinicName },
     });
-    return { id: user.id, email: user.email, clinicName: user.clinicName };
+    return toAuthUserFields(user);
   } catch (error) {
     if (isUniqueConstraintError(error, "email")) {
       throw new AppError(409, "EMAIL_CONFLICT", EMAIL_CONFLICT_MESSAGE);
+    }
+    throw error;
+  }
+}
+
+export async function updateClinicDetails(
+  userId: string,
+  input: {
+    clinicName?: string;
+    clinicAddress?: string;
+    clinicPhone?: string;
+    vetRegistrationNumber?: string;
+  },
+): Promise<AuthUserFields> {
+  try {
+    const user = await prisma.user.update({ where: { id: userId }, data: input });
+    return toAuthUserFields(user);
+  } catch (error) {
+    if (isRecordNotFoundError(error)) {
+      throw new AppError(404, "USER_NOT_FOUND", "User not found");
     }
     throw error;
   }

@@ -11,7 +11,7 @@ export function BottomTabBar() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 flex border-t border-black/10 bg-white"
+      className="fixed inset-x-0 bottom-0 flex border-t border-black/10 bg-white print:hidden"
     >
       {TABS.map((tab) => (
         <NavLink

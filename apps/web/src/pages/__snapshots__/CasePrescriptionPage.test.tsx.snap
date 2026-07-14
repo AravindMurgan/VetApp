@@ -1,0 +1,159 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CasePrescriptionPage > matches the print markup snapshot 1`] = `
+<div>
+  <main
+    class="mx-auto max-w-2xl p-4 pb-24 print:p-0"
+  >
+    <button
+      class="mb-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white print:hidden"
+      type="button"
+    >
+      Print / Save PDF
+    </button>
+    <div
+      class="rounded-md border border-black/10 p-6 print:border-0 print:p-0"
+    >
+      <header
+        class="border-b border-black/20 pb-3 text-center"
+      >
+        <h1
+          class="text-xl font-semibold text-primary"
+        >
+          VetLog Clinic
+        </h1>
+        <p
+          class="text-sm text-black/70"
+        >
+          12 Park Street
+        </p>
+        <p
+          class="text-sm text-black/70"
+        >
+          5551234567
+        </p>
+        <p
+          class="text-sm text-black/70"
+        >
+          Reg. No. 
+          VET-9981
+        </p>
+      </header>
+      <section
+        class="mt-4 flex justify-between text-sm"
+      >
+        <div>
+          <p
+            class="font-medium"
+          >
+            Bruno
+          </p>
+          <p
+            class="text-black/60"
+          >
+            DOG
+             · Labrador
+          </p>
+        </div>
+        <div
+          class="text-right"
+        >
+          <p
+            class="font-medium"
+          >
+            Priya Sharma
+          </p>
+          <p
+            class="text-black/60"
+          >
+            9876543210
+          </p>
+        </div>
+      </section>
+      <p
+        class="mt-2 text-sm text-black/60"
+      >
+        Consultation
+         · 
+        July 14, 2026
+      </p>
+      <p
+        class="mt-1 text-sm"
+      >
+        <span
+          class="font-medium"
+        >
+          Diagnosis: 
+        </span>
+        Gastritis
+      </p>
+      <section
+        class="mt-6"
+      >
+        <p
+          aria-hidden="true"
+          class="text-2xl font-semibold text-primary"
+        >
+          ℞
+        </p>
+        <ul
+          class="mt-2 space-y-3"
+        >
+          <li>
+            <p
+              class="font-medium"
+            >
+              Metronidazole
+            </p>
+            <p
+              class="text-sm text-black/70"
+            >
+              50 mg · PO · BID · 5 day(s)
+            </p>
+            <p
+              class="text-sm text-black/60"
+            >
+              Give with food
+            </p>
+          </li>
+          <li>
+            <p
+              class="font-medium"
+            >
+              Ranitidine
+            </p>
+            <p
+              class="text-sm text-black/70"
+            >
+              10 mg · PO · SID · 3 day(s)
+            </p>
+          </li>
+        </ul>
+      </section>
+      <section
+        class="mt-6"
+      >
+        <h2
+          class="text-sm font-semibold text-black/70"
+        >
+          Advice
+        </h2>
+        <p
+          class="mt-1 text-sm"
+        >
+          Bland diet for 3 days.
+        </p>
+      </section>
+      <section
+        class="mt-12 flex justify-end"
+      >
+        <div
+          class="w-48 border-t border-black/40 pt-1 text-center text-sm text-black/60"
+        >
+          Signature
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+`;

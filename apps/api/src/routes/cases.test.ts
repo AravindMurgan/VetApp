@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
+import bcrypt from "bcrypt";
 import { createApp } from "../app";
 import { prisma } from "../lib/prisma-client";
 import { signTestAccessToken } from "../test-utils/auth";
@@ -221,5 +222,138 @@ describe("cases", () => {
       where: { caseId: response.body.id, reason: "VACCINE_DUE" },
     });
     expect(followUp).toBeNull();
+  });
+});
+
+describe("GET /cases/:id/prescription", () => {
+  const TEST_EMAIL = "prescription-test@vetlog.local";
+  const TEST_PASSWORD = "correct-horse-battery-staple";
+  const ownerIds: string[] = [];
+  let accessToken: string;
+  let patientId: string;
+  let caseId: string;
+  let caseWithRecheckId: string;
+
+  beforeAll(async () => {
+    const passwordHash = await bcrypt.hash(TEST_PASSWORD, 10);
+    await prisma.user.upsert({
+      where: { email: TEST_EMAIL },
+      update: {
+        passwordHash,
+        clinicName: "Prescription Test Clinic",
+        clinicAddress: "12 Park Street",
+        clinicPhone: "5551234567",
+        vetRegistrationNumber: "VET-9981",
+      },
+      create: {
+        email: TEST_EMAIL,
+        passwordHash,
+        clinicName: "Prescription Test Clinic",
+        clinicAddress: "12 Park Street",
+        clinicPhone: "5551234567",
+        vetRegistrationNumber: "VET-9981",
+      },
+    });
+
+    const loginResponse = await request(app)
+      .post("/api/v1/auth/login")
+      .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+    accessToken = loginResponse.body.accessToken;
+
+    const owner = await prisma.owner.create({
+      data: {
+        name: "Prescription Test Owner",
+        phone: "5558880002",
+        patients: { create: { name: "Prescription Test Pet", species: "CAT" } },
+      },
+      include: { patients: true },
+    });
+    ownerIds.push(owner.id);
+    patientId = owner.patients[0]!.id;
+
+    const createdCase = await prisma.case.create({
+      data: {
+        patientId,
+        type: "CONSULTATION",
+        clinicalNotes: "Keep the cone on for 7 days.",
+        treatments: {
+          create: [
+            {
+              drugName: "Amoxicillin",
+              dose: "50 mg",
+              route: "PO",
+              frequency: "BID",
+              durationDays: 7,
+              instructions: "Give with food",
+            },
+          ],
+        },
+      },
+    });
+    caseId = createdCase.id;
+
+    const caseWithRecheck = await prisma.case.create({ data: { patientId, type: "SURGERY" } });
+    caseWithRecheckId = caseWithRecheck.id;
+    await prisma.followUp.create({
+      data: {
+        patientId,
+        caseId: caseWithRecheckId,
+        dueDate: new Date("2026-07-21"),
+        reason: "RECHECK",
+      },
+    });
+  });
+
+  afterAll(async () => {
+    await prisma.followUp.deleteMany({ where: { patientId } });
+    await prisma.treatment.deleteMany({ where: { case: { patientId } } });
+    await prisma.case.deleteMany({ where: { patientId } });
+    await prisma.patient.deleteMany({ where: { ownerId: { in: ownerIds } } });
+    await prisma.owner.deleteMany({ where: { id: { in: ownerIds } } });
+    await prisma.user.delete({ where: { email: TEST_EMAIL } }).catch(() => undefined);
+  });
+
+  it("returns the case, treatment lines, patient/owner block, and clinic details", async () => {
+    const response = await request(app)
+      .get(`/api/v1/cases/${caseId}/prescription`)
+      .set("Authorization", `Bearer ${accessToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.case.id).toBe(caseId);
+    expect(response.body.treatments).toHaveLength(1);
+    expect(response.body.treatments[0].drugName).toBe("Amoxicillin");
+    expect(response.body.patient.id).toBe(patientId);
+    expect(response.body.owner.name).toBe("Prescription Test Owner");
+    expect(response.body.clinic).toEqual({
+      clinicName: "Prescription Test Clinic",
+      clinicAddress: "12 Park Street",
+      clinicPhone: "5551234567",
+      vetRegistrationNumber: "VET-9981",
+    });
+    expect(response.body.recheckFollowUp).toBeNull();
+  });
+
+  it("includes the recheck follow-up when one is linked to the case", async () => {
+    const response = await request(app)
+      .get(`/api/v1/cases/${caseWithRecheckId}/prescription`)
+      .set("Authorization", `Bearer ${accessToken}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.recheckFollowUp?.reason).toBe("RECHECK");
+    expect(response.body.recheckFollowUp?.dueDate.slice(0, 10)).toBe("2026-07-21");
+  });
+
+  it("returns 404 for an unknown case id", async () => {
+    const response = await request(app)
+      .get("/api/v1/cases/3fa85f64-5717-4562-b3fc-2c963f66afa6/prescription")
+      .set("Authorization", `Bearer ${accessToken}`);
+
+    expect(response.status).toBe(404);
+  });
+
+  it("rejects requests without a valid access token", async () => {
+    const response = await request(app).get(`/api/v1/cases/${caseId}/prescription`);
+
+    expect(response.status).toBe(401);
   });
 });

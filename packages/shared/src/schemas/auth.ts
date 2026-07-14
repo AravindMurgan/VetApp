@@ -10,6 +10,9 @@ export const authUserSchema = z.object({
   id: z.string().uuid(),
   email: z.string().email(),
   clinicName: z.string(),
+  clinicAddress: z.string().nullable(),
+  clinicPhone: z.string().nullable(),
+  vetRegistrationNumber: z.string().nullable(),
 });
 export type AuthUser = z.infer<typeof authUserSchema>;
 

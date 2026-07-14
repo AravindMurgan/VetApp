@@ -4,3 +4,14 @@
 body {
   background-color: var(--color-paper);
 }
+
+@media print {
+  @page {
+    size: A5;
+    margin: 12mm;
+  }
+
+  body {
+    background-color: white;
+  }
+}

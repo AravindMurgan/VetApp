@@ -140,4 +140,55 @@ describe("auth", () => {
       expect(response.status).toBe(400);
     });
   });
+
+  describe("PATCH /me — clinic details", () => {
+    async function loginAsTestUser(): Promise<string> {
+      const response = await request(app)
+        .post("/api/v1/auth/login")
+        .send({ email: TEST_EMAIL, password: TEST_PASSWORD });
+      return response.body.accessToken as string;
+    }
+
+    it("rejects clinic detail updates with no access token", async () => {
+      const response = await request(app)
+        .patch("/api/v1/me")
+        .send({ clinicAddress: "12 Park Street" });
+
+      expect(response.status).toBe(401);
+    });
+
+    it("updates clinic letterhead details for the authenticated user", async () => {
+      const accessToken = await loginAsTestUser();
+
+      const response = await request(app)
+        .patch("/api/v1/me")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({
+          clinicAddress: "12 Park Street",
+          clinicPhone: "5551234567",
+          vetRegistrationNumber: "VET-9981",
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body.clinicAddress).toBe("12 Park Street");
+      expect(response.body.clinicPhone).toBe("5551234567");
+      expect(response.body.vetRegistrationNumber).toBe("VET-9981");
+
+      const getMeResponse = await request(app)
+        .get("/api/v1/me")
+        .set("Authorization", `Bearer ${accessToken}`);
+      expect(getMeResponse.body.vetRegistrationNumber).toBe("VET-9981");
+    });
+
+    it("rejects a blank clinic name", async () => {
+      const accessToken = await loginAsTestUser();
+
+      const response = await request(app)
+        .patch("/api/v1/me")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .send({ clinicName: "" });
+
+      expect(response.status).toBe(400);
+    });
+  });
 });

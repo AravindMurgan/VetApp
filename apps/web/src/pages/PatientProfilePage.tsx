@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { PatientProfileResponse } from "@vetlog/shared";
 import { apiRequest } from "../lib/api-client";
@@ -84,7 +84,15 @@ export default function PatientProfilePage() {
           <ul className="mt-4 space-y-2">
             {data.cases.map((caseItem) => (
               <li key={caseItem.id} className="rounded-md border border-black/10 p-3">
-                <p className="font-medium">{CASE_TYPE_LABELS[caseItem.type]}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium">{CASE_TYPE_LABELS[caseItem.type]}</p>
+                  <Link
+                    to={`/cases/${caseItem.id}/prescription`}
+                    className="text-sm font-medium text-primary underline"
+                  >
+                    Prescription
+                  </Link>
+                </div>
                 <p className="text-sm text-black/60">
                   {new Date(caseItem.visitDate).toLocaleDateString()}
                   {caseItem.complaint ? ` · ${caseItem.complaint}` : ""}
