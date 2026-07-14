@@ -12,6 +12,7 @@ import { casesRouter } from "./routes/cases";
 import { dashboardRouter } from "./routes/dashboard";
 import { caseTemplatesRouter } from "./routes/case-templates";
 import { treatmentsRouter } from "./routes/treatments";
+import { followUpsRouter } from "./routes/follow-ups";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(): Express {
@@ -39,6 +40,7 @@ export function createApp(): Express {
   app.use("/api/v1/dashboard", dashboardRouter);
   app.use("/api/v1/case-templates", caseTemplatesRouter);
   app.use("/api/v1/treatments", treatmentsRouter);
+  app.use("/api/v1/followups", followUpsRouter);
 
   app.use(errorHandler);
 

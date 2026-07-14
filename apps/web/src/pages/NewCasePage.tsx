@@ -1,25 +1,32 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  type CaseCreate,
-  type CaseTemplateResponse,
-  type PatientSearchResult,
-} from "@vetlog/shared";
+import { type CaseCreate, type CaseTemplateResponse } from "@vetlog/shared";
 import { apiRequest } from "../lib/api-client";
 import { PatientStep } from "../components/new-case/PatientStep";
 import { CaseTypeStep } from "../components/new-case/CaseTypeStep";
 import { DetailsStep } from "../components/new-case/DetailsStep";
 import { TreatmentsStep } from "../components/new-case/TreatmentsStep";
-import { caseFormSchema, type CaseFormInput, type CaseFormOutput } from "./new-case/form-types";
+import {
+  caseFormSchema,
+  type CaseFormInput,
+  type CaseFormOutput,
+  type SelectedPatient,
+} from "./new-case/form-types";
+
+interface NewCaseLocationState {
+  preselectedPatient?: SelectedPatient;
+}
 
 export default function NewCasePage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
-  const [step, setStep] = useState(1);
-  const [selectedPatient, setSelectedPatient] = useState<PatientSearchResult | null>(null);
+  const preselected = (location.state as NewCaseLocationState | null)?.preselectedPatient ?? null;
+  const [step, setStep] = useState(preselected ? 2 : 1);
+  const [selectedPatient, setSelectedPatient] = useState<SelectedPatient | null>(preselected);
   const [toast, setToast] = useState<string | null>(null);
   const isSubmittingRef = useRef(false);
 

@@ -21,6 +21,7 @@ vi.mock("./lib/api-client", () => ({
     casesToday: [],
     followUpsDueToday: [],
     followUpCounts: { dueToday: 0, overdue: 0 },
+    followUps: [],
   }),
 }));
 
