@@ -1,11 +1,15 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { DashboardTodayResponse } from "@vetlog/shared";
 import { apiRequest } from "../lib/api-client";
 import { CaseCard } from "../components/CaseCard";
 import { DueTodayFollowUpItem } from "../components/DueTodayFollowUpItem";
+import { InstallPromptBanner } from "../components/InstallPromptBanner";
+import { recordVisit } from "../lib/visit-counter";
 
 export default function TodayPage() {
+  const [visitCount] = useState(() => recordVisit());
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-today"],
     queryFn: () => apiRequest<DashboardTodayResponse>("/dashboard/today"),
@@ -15,6 +19,7 @@ export default function TodayPage() {
     <main className="p-4 pb-24">
       <h1 className="text-xl font-semibold text-primary">Today</h1>
       {data ? <p className="text-sm text-black/60">{data.date}</p> : null}
+      <InstallPromptBanner visitCount={visitCount} />
 
       {isLoading ? (
         <p className="mt-4 text-black/50">Loading…</p>
