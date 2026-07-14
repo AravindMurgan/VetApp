@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: vetlog-api
+    runtime: node
+    plan: free
+    rootDir: apps/api
+    buildCommand: pnpm install --frozen-lockfile && pnpm exec prisma generate && pnpm exec prisma migrate deploy
+    startCommand: pnpm run start
+    healthCheckPath: /api/v1/health
+    envVars:
+      # Postgres lives on Neon/Supabase (SPEC.md §9), not Render's own — set
+      # this to that connection string in the Render dashboard.
+      - key: DATABASE_URL
+        sync: false
+      - key: ACCESS_TOKEN_SECRET
+        sync: false
+      - key: REFRESH_TOKEN_SECRET
+        sync: false
+      # The deployed Vercel URL for the web app, once it exists.
+      - key: CORS_ORIGIN
+        sync: false
+      - key: CLINIC_TIMEZONE
+        value: Asia/Kolkata
+      # Cloudflare R2 (photo storage) — see apps/api/.env.example.
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: R2_PUBLIC_URL
+        sync: false
