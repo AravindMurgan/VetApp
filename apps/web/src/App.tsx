@@ -7,6 +7,7 @@ import FollowUpsPage from "./pages/FollowUpsPage";
 import MorePage from "./pages/MorePage";
 import NewCasePage from "./pages/NewCasePage";
 import VaccineSchedulesPage from "./pages/VaccineSchedulesPage";
+import PatientProfilePage from "./pages/PatientProfilePage";
 
 export function App() {
   return (
@@ -19,6 +20,7 @@ export function App() {
         <Route path="/more" element={<MorePage />} />
         <Route path="/new-case" element={<NewCasePage />} />
         <Route path="/vaccine-schedules" element={<VaccineSchedulesPage />} />
+        <Route path="/patients/:id" element={<PatientProfilePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/today" replace />} />
     </Routes>

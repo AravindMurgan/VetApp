@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { makeUniqueEmail } from "./unique";
 
 test("an authenticated user can register a new staff account from More", async ({ page }) => {
   await page.goto("/login");
@@ -12,7 +13,7 @@ test("an authenticated user can register a new staff account from More", async (
 
   await page.getByRole("button", { name: /add staff account/i }).click();
 
-  const uniqueEmail = `staff-${Date.now()}@vetlog.local`;
+  const uniqueEmail = makeUniqueEmail("staff");
 
   await page.getByLabel(/^email$/i).fill(uniqueEmail);
   await page.getByLabel(/^password$/i).fill("another-long-password");

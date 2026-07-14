@@ -100,4 +100,85 @@ describe("patients", () => {
 
     expect(response.status).toBe(405);
   });
+
+  it("returns 404 for an unknown patient id", async () => {
+    const response = await request(app)
+      .get("/api/v1/patients/3fa85f64-5717-4562-b3fc-2c963f66afa6")
+      .set("Authorization", authHeader);
+
+    expect(response.status).toBe(404);
+  });
+});
+
+describe("GET /patients/:id profile", () => {
+  let profilePatientId: string;
+  const profileOwnerIds: string[] = [];
+  let oldestCaseId: string;
+  let middleCaseId: string;
+  let newestCaseId: string;
+
+  beforeAll(async () => {
+    const owner = await prisma.owner.create({
+      data: {
+        name: "Profile Test Owner",
+        phone: "5559990002",
+        patients: { create: { name: "Profile Test Pet", species: "DOG" } },
+      },
+      include: { patients: true },
+    });
+    profileOwnerIds.push(owner.id);
+    profilePatientId = owner.patients[0]!.id;
+
+    const [oldest, middle, newest] = await Promise.all([
+      prisma.case.create({
+        data: { patientId: profilePatientId, type: "CONSULTATION", visitDate: new Date("2026-01-01") },
+      }),
+      prisma.case.create({
+        data: { patientId: profilePatientId, type: "CONSULTATION", visitDate: new Date("2026-03-01") },
+      }),
+      prisma.case.create({
+        data: { patientId: profilePatientId, type: "CONSULTATION", visitDate: new Date("2026-05-01") },
+      }),
+    ]);
+    oldestCaseId = oldest.id;
+    middleCaseId = middle.id;
+    newestCaseId = newest.id;
+
+    await prisma.weightEntry.create({
+      data: { patientId: profilePatientId, weightKg: 12.4 },
+    });
+    await prisma.vaccinationRecord.create({
+      data: { patientId: profilePatientId, vaccineName: "DHPPi", doseLabel: "1st dose", givenAt: new Date() },
+    });
+  });
+
+  afterAll(async () => {
+    await prisma.vaccinationRecord.deleteMany({ where: { patientId: profilePatientId } });
+    await prisma.weightEntry.deleteMany({ where: { patientId: profilePatientId } });
+    await prisma.case.deleteMany({ where: { patientId: profilePatientId } });
+    await prisma.patient.deleteMany({ where: { ownerId: { in: profileOwnerIds } } });
+    await prisma.owner.deleteMany({ where: { id: { in: profileOwnerIds } } });
+  });
+
+  it("returns the timeline ordered newest-first", async () => {
+    const response = await request(app)
+      .get(`/api/v1/patients/${profilePatientId}`)
+      .set("Authorization", authHeader);
+
+    expect(response.status).toBe(200);
+    const caseIds = response.body.cases.map((c: { id: string }) => c.id);
+    expect(caseIds).toEqual([newestCaseId, middleCaseId, oldestCaseId]);
+  });
+
+  it("includes weight and vaccination history", async () => {
+    const response = await request(app)
+      .get(`/api/v1/patients/${profilePatientId}`)
+      .set("Authorization", authHeader);
+
+    expect(response.status).toBe(200);
+    expect(response.body.weights).toHaveLength(1);
+    expect(Number(response.body.weights[0].weightKg)).toBe(12.4);
+    expect(response.body.vaccinations).toHaveLength(1);
+    expect(response.body.vaccinations[0].vaccineName).toBe("DHPPi");
+  });
 });

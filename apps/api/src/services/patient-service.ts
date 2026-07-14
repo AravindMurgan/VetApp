@@ -18,7 +18,15 @@ export async function createPatient(input: PatientCreate) {
 }
 
 export async function getPatientById(id: string) {
-  const patient = await prisma.patient.findUnique({ where: { id }, include: { owner: true } });
+  const patient = await prisma.patient.findUnique({
+    where: { id },
+    include: {
+      owner: true,
+      cases: { orderBy: { visitDate: "desc" } },
+      weights: { orderBy: { recordedAt: "desc" } },
+      vaccinations: { orderBy: { givenAt: "desc" } },
+    },
+  });
   if (!patient) {
     throw new AppError(404, "PATIENT_NOT_FOUND", "Patient not found");
   }

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { makeUniquePhone } from "./unique";
 
 test("create an owner+patient and find it via search", async ({ page }) => {
   await page.goto("/login");
@@ -12,7 +13,7 @@ test("create an owner+patient and find it via search", async ({ page }) => {
 
   await page.getByRole("button", { name: /new patient/i }).click();
 
-  const uniquePhone = `555${Date.now().toString().slice(-7)}`;
+  const uniquePhone = makeUniquePhone();
   const petName = `E2E Pet ${uniquePhone}`;
 
   await page.getByLabel(/owner phone/i).fill(uniquePhone);

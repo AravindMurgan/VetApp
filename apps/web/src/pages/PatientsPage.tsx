@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import type { PatientListResponse } from "@vetlog/shared";
 import { apiRequest } from "../lib/api-client";
@@ -45,17 +46,19 @@ export default function PatientsPage() {
       ) : (
         <ul className="mt-4 space-y-2">
           {data?.patients.map((patient) => (
-            <li
-              key={patient.id}
-              className="flex items-center justify-between rounded-md border border-black/10 p-3"
-            >
-              <div>
-                <p className="font-medium">{patient.name}</p>
-                <p className="text-sm text-black/60">
-                  {patient.owner.name} · {patient.owner.phone}
-                </p>
-              </div>
-              <SpeciesChip species={patient.species} />
+            <li key={patient.id}>
+              <Link
+                to={`/patients/${patient.id}`}
+                className="flex items-center justify-between rounded-md border border-black/10 p-3"
+              >
+                <div>
+                  <p className="font-medium">{patient.name}</p>
+                  <p className="text-sm text-black/60">
+                    {patient.owner.name} · {patient.owner.phone}
+                  </p>
+                </div>
+                <SpeciesChip species={patient.species} />
+              </Link>
             </li>
           ))}
         </ul>

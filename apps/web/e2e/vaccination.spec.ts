@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { makeUniquePhone } from "./unique";
 
 test("logging a vaccination auto-creates a VACCINE_DUE follow-up visible under Upcoming", async ({
   page,
@@ -9,7 +10,7 @@ test("logging a vaccination auto-creates a VACCINE_DUE follow-up visible under U
   });
   const { accessToken } = await loginResponse.json();
 
-  const uniquePhone = `555${Date.now().toString().slice(-7)}`;
+  const uniquePhone = makeUniquePhone();
   const petName = `Vaccination Test Pet ${uniquePhone}`;
   await request.post("http://localhost:3000/api/v1/owners", {
     headers: { Authorization: `Bearer ${accessToken}` },

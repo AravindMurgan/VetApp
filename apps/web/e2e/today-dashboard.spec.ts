@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { makeUniquePhone } from "./unique";
 
 test("a logged case appears on the Today dashboard", async ({ page, request }) => {
   const loginResponse = await request.post("http://localhost:3000/api/v1/auth/login", {
@@ -6,7 +7,7 @@ test("a logged case appears on the Today dashboard", async ({ page, request }) =
   });
   const { accessToken } = await loginResponse.json();
 
-  const uniquePhone = `555${Date.now().toString().slice(-7)}`;
+  const uniquePhone = makeUniquePhone();
   const petName = `Today Dashboard Pet ${uniquePhone}`;
   const complaint = `Itchy ears ${uniquePhone}`;
   await request.post("http://localhost:3000/api/v1/owners", {

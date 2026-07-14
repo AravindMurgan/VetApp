@@ -1,4 +1,5 @@
 import { test, expect, type Locator } from "@playwright/test";
+import { makeUniquePhone } from "./unique";
 
 test("logs a vaccination case from a template in a small number of interactions", async ({
   page,
@@ -9,7 +10,7 @@ test("logs a vaccination case from a template in a small number of interactions"
   });
   const { accessToken } = await loginResponse.json();
 
-  const uniquePhone = `555${Date.now().toString().slice(-7)}`;
+  const uniquePhone = makeUniquePhone();
   const ownerResponse = await request.post("http://localhost:3000/api/v1/owners", {
     headers: { Authorization: `Bearer ${accessToken}` },
     data: {
