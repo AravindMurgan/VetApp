@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { treatmentCreateNestedSchema, treatmentResponseSchema } from "./treatment";
+import { treatmentCreateNestedSchema, treatmentResponseSchema, drugNameListResponseSchema } from "./treatment";
 
 describe("treatmentCreateNestedSchema", () => {
   it("accepts a valid treatment payload", () => {
@@ -61,6 +61,18 @@ describe("treatmentResponseSchema", () => {
       isProcedure: false,
     });
 
+    expect(result.success).toBe(true);
+  });
+});
+
+describe("drugNameListResponseSchema", () => {
+  it("accepts a list of drug names", () => {
+    const result = drugNameListResponseSchema.safeParse({ drugNames: ["Amoxicillin", "Meloxicam"] });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty list", () => {
+    const result = drugNameListResponseSchema.safeParse({ drugNames: [] });
     expect(result.success).toBe(true);
   });
 });

@@ -10,3 +10,4 @@ export * from "./schemas/weight-entry";
 export * from "./schemas/follow-up";
 export * from "./schemas/case";
 export * from "./schemas/dashboard";
+export * from "./schemas/case-template";

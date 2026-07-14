@@ -10,6 +10,8 @@ import { ownersRouter } from "./routes/owners";
 import { patientsRouter } from "./routes/patients";
 import { casesRouter } from "./routes/cases";
 import { dashboardRouter } from "./routes/dashboard";
+import { caseTemplatesRouter } from "./routes/case-templates";
+import { treatmentsRouter } from "./routes/treatments";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(): Express {
@@ -35,6 +37,8 @@ export function createApp(): Express {
   app.use("/api/v1/patients", patientsRouter);
   app.use("/api/v1/cases", casesRouter);
   app.use("/api/v1/dashboard", dashboardRouter);
+  app.use("/api/v1/case-templates", caseTemplatesRouter);
+  app.use("/api/v1/treatments", treatmentsRouter);
 
   app.use(errorHandler);
 

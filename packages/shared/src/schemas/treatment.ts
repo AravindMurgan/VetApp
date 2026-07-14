@@ -24,3 +24,8 @@ export const treatmentResponseSchema = z.object({
   isProcedure: z.boolean(),
 });
 export type TreatmentResponse = z.infer<typeof treatmentResponseSchema>;
+
+export const drugNameListResponseSchema = z.object({
+  drugNames: z.array(z.string()),
+});
+export type DrugNameListResponse = z.infer<typeof drugNameListResponseSchema>;
