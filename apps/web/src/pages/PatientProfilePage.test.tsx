@@ -39,6 +39,7 @@ function baseProfile(overrides: Record<string, unknown> = {}) {
     cases: [],
     weights: [],
     vaccinations: [],
+    attachments: [],
     ...overrides,
   };
 }
@@ -96,7 +97,7 @@ describe("PatientProfilePage", () => {
     expect(screen.getByText(/no weight recorded yet/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Photos" }));
-    expect(screen.getByText(/photos coming soon/i)).toBeInTheDocument();
+    expect(screen.getByText(/no photos yet/i)).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Timeline" }));
     expect(screen.getByText(/Vomiting/)).toBeInTheDocument();
@@ -167,5 +168,50 @@ describe("PatientProfilePage", () => {
 
     await screen.findByText("Bruno");
     expect(screen.queryByText("Deceased")).not.toBeInTheDocument();
+  });
+
+  it("shows a thumbnail on the matching case in the timeline and lists all photos in the gallery", async () => {
+    apiRequestMock.mockResolvedValue(
+      baseProfile({
+        cases: [
+          {
+            id: "c1",
+            patientId: "p1",
+            type: "CONSULTATION",
+            status: "OPEN",
+            visitDate: "2026-01-05T00:00:00.000Z",
+            complaint: "Vomiting",
+            temperatureC: null,
+            heartRate: null,
+            respRate: null,
+            clinicalNotes: null,
+            diagnosis: null,
+            templateId: null,
+            createdAt: "2026-01-05T00:00:00.000Z",
+          },
+        ],
+        attachments: [
+          {
+            id: "a1",
+            caseId: "c1",
+            url: "https://pub-example.r2.dev/cases/c1/photo.jpg",
+            thumbUrl: "https://pub-example.r2.dev/cases/c1/photo.jpg",
+            createdAt: "2026-01-05T00:00:00.000Z",
+          },
+        ],
+      }),
+    );
+    const user = userEvent.setup();
+    renderPage();
+
+    await screen.findByText(/Vomiting/);
+    const timelineImages = screen.getAllByRole("img");
+    expect(timelineImages).toHaveLength(1);
+    expect(timelineImages[0]).toHaveAttribute("src", "https://pub-example.r2.dev/cases/c1/photo.jpg");
+
+    await user.click(screen.getByRole("button", { name: "Photos" }));
+    const galleryImages = screen.getAllByRole("img");
+    expect(galleryImages).toHaveLength(1);
+    expect(galleryImages[0]).toHaveAttribute("src", "https://pub-example.r2.dev/cases/c1/photo.jpg");
   });
 });

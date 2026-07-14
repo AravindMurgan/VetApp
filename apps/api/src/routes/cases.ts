@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { caseUpdateSchema } from "@vetlog/shared";
+import { caseUpdateSchema, attachmentUploadRequestSchema } from "@vetlog/shared";
 import { validateBody } from "../middleware/validate";
 import { requireAuth, type AuthenticatedRequest } from "../middleware/auth";
 import { requireParam } from "../lib/require-param";
 import { AppError } from "../errors/app-error";
 import * as caseService from "../services/case-service";
+import * as attachmentService from "../services/attachment-service";
 
 export const casesRouter: Router = Router();
 
@@ -28,3 +29,15 @@ casesRouter.patch("/:id", validateBody(caseUpdateSchema), async (req, res) => {
   const updatedCase = await caseService.updateCase(requireParam(req, "id"), req.body);
   res.status(200).json(updatedCase);
 });
+
+casesRouter.post(
+  "/:id/attachments",
+  validateBody(attachmentUploadRequestSchema),
+  async (req, res) => {
+    const upload = await attachmentService.createAttachmentUpload(
+      requireParam(req, "id"),
+      req.body.contentType,
+    );
+    res.status(201).json(upload);
+  },
+);

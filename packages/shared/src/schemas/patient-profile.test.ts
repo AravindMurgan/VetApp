@@ -65,6 +65,15 @@ describe("patientProfileResponseSchema", () => {
           caseId: VALID_UUID,
         },
       ],
+      attachments: [
+        {
+          id: VALID_UUID,
+          caseId: VALID_UUID,
+          url: "https://pub-example.r2.dev/cases/x/photo.jpg",
+          thumbUrl: "https://pub-example.r2.dev/cases/x/photo.jpg",
+          createdAt: "2026-07-14T00:00:00.000Z",
+        },
+      ],
     });
 
     expect(result.success).toBe(true);
@@ -96,6 +105,7 @@ describe("patientProfileResponseSchema", () => {
       cases: [],
       weights: [],
       vaccinations: [],
+      attachments: [],
     });
 
     expect(result.success).toBe(true);

@@ -6,6 +6,7 @@ import { apiRequest } from "../lib/api-client";
 import { CASE_TYPE_LABELS } from "../lib/case-type-labels";
 import { formatAge } from "../lib/format-age";
 import { WeightChart } from "../components/WeightChart";
+import { PhotoCapture } from "../components/PhotoCapture";
 
 const TABS = [
   { value: "timeline", label: "Timeline" },
@@ -82,23 +83,43 @@ export default function PatientProfilePage() {
           <p className="mt-4 text-black/50">No cases logged yet.</p>
         ) : (
           <ul className="mt-4 space-y-2">
-            {data.cases.map((caseItem) => (
-              <li key={caseItem.id} className="rounded-md border border-black/10 p-3">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium">{CASE_TYPE_LABELS[caseItem.type]}</p>
-                  <Link
-                    to={`/cases/${caseItem.id}/prescription`}
-                    className="text-sm font-medium text-primary underline"
-                  >
-                    Prescription
-                  </Link>
-                </div>
-                <p className="text-sm text-black/60">
-                  {new Date(caseItem.visitDate).toLocaleDateString()}
-                  {caseItem.complaint ? ` · ${caseItem.complaint}` : ""}
-                </p>
-              </li>
-            ))}
+            {data.cases.map((caseItem) => {
+              const caseAttachments = data.attachments.filter(
+                (attachment) => attachment.caseId === caseItem.id,
+              );
+              return (
+                <li key={caseItem.id} className="rounded-md border border-black/10 p-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium">{CASE_TYPE_LABELS[caseItem.type]}</p>
+                    <Link
+                      to={`/cases/${caseItem.id}/prescription`}
+                      className="text-sm font-medium text-primary underline"
+                    >
+                      Prescription
+                    </Link>
+                  </div>
+                  <p className="text-sm text-black/60">
+                    {new Date(caseItem.visitDate).toLocaleDateString()}
+                    {caseItem.complaint ? ` · ${caseItem.complaint}` : ""}
+                  </p>
+                  {caseAttachments.length > 0 ? (
+                    <div className="mt-2 flex gap-1">
+                      {caseAttachments.map((attachment) => (
+                        <img
+                          key={attachment.id}
+                          src={attachment.thumbUrl ?? attachment.url}
+                          alt={`${data.name} photo`}
+                          className="h-12 w-12 rounded-md object-cover"
+                        />
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="mt-2">
+                    <PhotoCapture caseId={caseItem.id} patientId={id ?? ""} />
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )
       ) : null}
@@ -133,12 +154,20 @@ export default function PatientProfilePage() {
 
       {tab === "photos" ? (
         <div className="mt-4">
-          <p className="text-black/50">Photos coming soon.</p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            {[0, 1, 2, 3, 4, 5].map((placeholder) => (
-              <div key={placeholder} className="aspect-square rounded-md bg-black/5" />
-            ))}
-          </div>
+          {data.attachments.length === 0 ? (
+            <p className="text-black/50">No photos yet.</p>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              {data.attachments.map((attachment) => (
+                <img
+                  key={attachment.id}
+                  src={attachment.url}
+                  alt={`${data.name} photo`}
+                  className="aspect-square rounded-md object-cover"
+                />
+              ))}
+            </div>
+          )}
         </div>
       ) : null}
     </main>

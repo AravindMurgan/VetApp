@@ -22,7 +22,7 @@ export async function getPatientById(id: string) {
     where: { id },
     include: {
       owner: true,
-      cases: { orderBy: { visitDate: "desc" } },
+      cases: { orderBy: { visitDate: "desc" }, include: { attachments: true } },
       weights: { orderBy: { recordedAt: "desc" } },
       vaccinations: { orderBy: { givenAt: "desc" } },
     },
@@ -30,7 +30,13 @@ export async function getPatientById(id: string) {
   if (!patient) {
     throw new AppError(404, "PATIENT_NOT_FOUND", "Patient not found");
   }
-  return patient;
+
+  const attachments = patient.cases
+    .flatMap((patientCase) => patientCase.attachments)
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  const cases = patient.cases.map(({ attachments: _attachments, ...caseFields }) => caseFields);
+
+  return { ...patient, cases, attachments };
 }
 
 export async function updatePatient(id: string, input: PatientUpdate) {

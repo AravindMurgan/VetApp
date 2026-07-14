@@ -13,6 +13,7 @@ export * from "./schemas/dashboard";
 export * from "./schemas/case-template";
 export * from "./schemas/vaccine-schedule";
 export * from "./schemas/vaccination-record";
+export * from "./schemas/attachment";
 export * from "./schemas/patient-profile";
 export * from "./schemas/user";
 export * from "./schemas/case-prescription";
