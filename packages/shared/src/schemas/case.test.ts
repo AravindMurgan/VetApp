@@ -75,6 +75,26 @@ describe("caseCreateSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("accepts a nested vaccination", () => {
+    const result = caseCreateSchema.safeParse({
+      type: "VACCINATION",
+      vaccination: { vaccineName: "DHPPi", doseLabel: "1st dose" },
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.vaccination?.vaccineName).toBe("DHPPi");
+    }
+  });
+
+  it("rejects a nested vaccination missing doseLabel", () => {
+    const result = caseCreateSchema.safeParse({
+      type: "VACCINATION",
+      vaccination: { vaccineName: "DHPPi" },
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("caseUpdateSchema", () => {

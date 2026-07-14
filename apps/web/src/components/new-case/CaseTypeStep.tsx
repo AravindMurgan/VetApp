@@ -8,6 +8,7 @@ import {
 } from "@vetlog/shared";
 import { apiRequest } from "../../lib/api-client";
 import { CASE_TYPE_LABELS } from "../../lib/case-type-labels";
+import { VaccinePicker } from "./VaccinePicker";
 import type { CaseFormInput } from "../../pages/new-case/form-types";
 
 const CASE_TYPE_OPTIONS = caseTypeSchema.options;
@@ -53,6 +54,8 @@ export function CaseTypeStep({ patientSpecies, onApplyTemplate }: CaseTypeStepPr
           </button>
         ))}
       </div>
+
+      {selectedType === "VACCINATION" ? <VaccinePicker patientSpecies={patientSpecies} /> : null}
 
       {selectedType && relevantTemplates.length > 0 ? (
         <div>

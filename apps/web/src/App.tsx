@@ -6,6 +6,7 @@ import PatientsPage from "./pages/PatientsPage";
 import FollowUpsPage from "./pages/FollowUpsPage";
 import MorePage from "./pages/MorePage";
 import NewCasePage from "./pages/NewCasePage";
+import VaccineSchedulesPage from "./pages/VaccineSchedulesPage";
 
 export function App() {
   return (
@@ -17,6 +18,7 @@ export function App() {
         <Route path="/follow-ups" element={<FollowUpsPage />} />
         <Route path="/more" element={<MorePage />} />
         <Route path="/new-case" element={<NewCasePage />} />
+        <Route path="/vaccine-schedules" element={<VaccineSchedulesPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/today" replace />} />
     </Routes>

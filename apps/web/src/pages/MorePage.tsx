@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../auth/auth-context";
 import { RegisterStaffForm } from "../components/RegisterStaffForm";
 
@@ -10,6 +11,16 @@ export default function MorePage() {
     <main className="p-4">
       <h1 className="text-xl font-semibold text-primary">More</h1>
       {user ? <p className="mt-2 text-sm text-black/70">{user.clinicName}</p> : null}
+
+      <section className="mt-6">
+        <h2 className="text-sm font-semibold text-black/70">Clinic settings</h2>
+        <Link
+          to="/vaccine-schedules"
+          className="mt-2 inline-block rounded-md border border-black/20 px-4 py-2 text-sm font-medium"
+        >
+          Vaccine schedules
+        </Link>
+      </section>
 
       <section className="mt-6">
         <h2 className="text-sm font-semibold text-black/70">Staff accounts</h2>

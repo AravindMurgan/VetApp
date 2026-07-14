@@ -1,7 +1,11 @@
-import type { CaseCreate, CaseUpdate } from "@vetlog/shared";
+import { z } from "zod";
+import { doseDefinitionSchema, type CaseCreate, type CaseUpdate } from "@vetlog/shared";
 import { prisma } from "../lib/prisma-client";
 import { AppError } from "../errors/app-error";
 import { isRecordNotFoundError } from "../lib/prisma-errors";
+import { computeNextDueAt } from "../lib/vaccination";
+
+const doseDefinitionListSchema = z.array(doseDefinitionSchema);
 
 export async function createCase(patientId: string, input: CaseCreate) {
   const patient = await prisma.patient.findUnique({ where: { id: patientId } });
@@ -9,7 +13,15 @@ export async function createCase(patientId: string, input: CaseCreate) {
     throw new AppError(404, "PATIENT_NOT_FOUND", "Patient not found");
   }
 
-  const { treatments, weightEntry, followUp, ...caseFields } = input;
+  if (input.vaccination && input.type !== "VACCINATION") {
+    throw new AppError(
+      400,
+      "VALIDATION_ERROR",
+      "vaccination can only be recorded on a VACCINATION case",
+    );
+  }
+
+  const { treatments, weightEntry, followUp, vaccination, ...caseFields } = input;
 
   return prisma.$transaction(async (tx) => {
     const createdCase = await tx.case.create({
@@ -32,6 +44,45 @@ export async function createCase(patientId: string, input: CaseCreate) {
       await tx.followUp.create({
         data: { ...followUp, patientId, caseId: createdCase.id },
       });
+    }
+
+    if (vaccination) {
+      const givenAt = vaccination.givenAt ?? new Date();
+      const schedule = await tx.vaccineSchedule.findUnique({
+        where: {
+          species_vaccineName: { species: patient.species, vaccineName: vaccination.vaccineName },
+        },
+      });
+
+      let nextDueAt: Date | null = null;
+      if (schedule) {
+        const doses = doseDefinitionListSchema.parse(schedule.doses);
+        nextDueAt = computeNextDueAt(doses, vaccination.doseLabel, givenAt);
+      }
+
+      await tx.vaccinationRecord.create({
+        data: {
+          patientId,
+          caseId: createdCase.id,
+          vaccineName: vaccination.vaccineName,
+          doseLabel: vaccination.doseLabel,
+          givenAt,
+          batchNo: vaccination.batchNo,
+          nextDueAt,
+        },
+      });
+
+      if (nextDueAt) {
+        await tx.followUp.create({
+          data: {
+            patientId,
+            caseId: createdCase.id,
+            dueDate: nextDueAt,
+            reason: "VACCINE_DUE",
+            status: "PENDING",
+          },
+        });
+      }
     }
 
     return tx.case.findUniqueOrThrow({

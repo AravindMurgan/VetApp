@@ -25,6 +25,7 @@ describe("cases", () => {
   });
 
   afterAll(async () => {
+    await prisma.vaccinationRecord.deleteMany({ where: { patientId } });
     await prisma.followUp.deleteMany({ where: { patientId } });
     await prisma.weightEntry.deleteMany({ where: { patientId } });
     await prisma.treatment.deleteMany({ where: { case: { patientId } } });
@@ -157,5 +158,68 @@ describe("cases", () => {
     });
 
     expect(response.status).toBe(401);
+  });
+
+  it("rejects a vaccination on a non-VACCINATION case", async () => {
+    const response = await request(app)
+      .post(`/api/v1/patients/${patientId}/cases`)
+      .set("Authorization", authHeader)
+      .send({
+        type: "CONSULTATION",
+        vaccination: { vaccineName: "DHPPi", doseLabel: "1st dose" },
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  it("logging a VACCINATION case creates a VaccinationRecord and auto-schedules a VACCINE_DUE follow-up", async () => {
+    const response = await request(app)
+      .post(`/api/v1/patients/${patientId}/cases`)
+      .set("Authorization", authHeader)
+      .send({
+        type: "VACCINATION",
+        vaccination: { vaccineName: "DHPPi", doseLabel: "1st dose", givenAt: "2026-07-14" },
+      });
+
+    expect(response.status).toBe(201);
+
+    const vaccinationRecord = await prisma.vaccinationRecord.findFirst({
+      where: { caseId: response.body.id },
+    });
+    expect(vaccinationRecord).not.toBeNull();
+    expect(vaccinationRecord?.vaccineName).toBe("DHPPi");
+    expect(vaccinationRecord?.doseLabel).toBe("1st dose");
+    // DHPPi: 1st dose ageWeeks 7, 2nd dose ageWeeks 11 -> 4 week (28 day) gap.
+    expect(vaccinationRecord?.nextDueAt?.toISOString().slice(0, 10)).toBe("2026-08-11");
+
+    const followUp = await prisma.followUp.findFirst({
+      where: { caseId: response.body.id, reason: "VACCINE_DUE" },
+    });
+    expect(followUp).not.toBeNull();
+    expect(followUp?.status).toBe("PENDING");
+    expect(followUp?.dueDate.toISOString().slice(0, 10)).toBe("2026-08-11");
+  });
+
+  it("records a vaccination without a matching schedule, with no auto follow-up", async () => {
+    const response = await request(app)
+      .post(`/api/v1/patients/${patientId}/cases`)
+      .set("Authorization", authHeader)
+      .send({
+        type: "VACCINATION",
+        vaccination: { vaccineName: "Unlisted Vaccine", doseLabel: "1st dose" },
+      });
+
+    expect(response.status).toBe(201);
+
+    const vaccinationRecord = await prisma.vaccinationRecord.findFirst({
+      where: { caseId: response.body.id },
+    });
+    expect(vaccinationRecord).not.toBeNull();
+    expect(vaccinationRecord?.nextDueAt).toBeNull();
+
+    const followUp = await prisma.followUp.findFirst({
+      where: { caseId: response.body.id, reason: "VACCINE_DUE" },
+    });
+    expect(followUp).toBeNull();
   });
 });

@@ -11,3 +11,5 @@ export * from "./schemas/follow-up";
 export * from "./schemas/case";
 export * from "./schemas/dashboard";
 export * from "./schemas/case-template";
+export * from "./schemas/vaccine-schedule";
+export * from "./schemas/vaccination-record";

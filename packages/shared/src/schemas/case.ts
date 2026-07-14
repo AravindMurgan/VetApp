@@ -3,10 +3,15 @@ import { caseTypeSchema, caseStatusSchema } from "./enums";
 import { treatmentCreateNestedSchema, treatmentResponseSchema } from "./treatment";
 import { weightEntryCreateNestedSchema } from "./weight-entry";
 import { followUpCreateNestedSchema, followUpResponseSchema } from "./follow-up";
+import { vaccinationCreateNestedSchema } from "./vaccination-record";
 
 /**
  * Body for POST /patients/:id/cases — patientId comes from the URL, not the body.
- * Nests optional treatments, a weight entry, and a follow-up in one transactional create.
+ * Nests optional treatments, a weight entry, a follow-up, and (for VACCINATION
+ * cases) a vaccination in one transactional create. Giving a vaccination
+ * auto-creates a VaccinationRecord and, per its VaccineSchedule, a
+ * FollowUp(VACCINE_DUE) — the API rejects `vaccination` on a non-VACCINATION
+ * case rather than silently ignoring it.
  */
 export const caseCreateSchema = z.object({
   type: caseTypeSchema,
@@ -20,6 +25,7 @@ export const caseCreateSchema = z.object({
   treatments: z.array(treatmentCreateNestedSchema).default([]),
   weightEntry: weightEntryCreateNestedSchema.optional(),
   followUp: followUpCreateNestedSchema.optional(),
+  vaccination: vaccinationCreateNestedSchema.optional(),
 });
 export type CaseCreate = z.infer<typeof caseCreateSchema>;
 
