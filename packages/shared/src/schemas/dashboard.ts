@@ -5,6 +5,7 @@ import { followUpSummaryResponseSchema } from "./follow-up";
 
 export const caseSummaryResponseSchema = caseResponseSchema.extend({
   patient: patientResponseSchema.pick({ id: true, name: true, species: true }),
+  weightKg: z.string().nullable(),
 });
 export type CaseSummaryResponse = z.infer<typeof caseSummaryResponseSchema>;
 

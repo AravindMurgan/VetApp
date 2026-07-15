@@ -214,4 +214,34 @@ describe("PatientProfilePage", () => {
     expect(galleryImages).toHaveLength(1);
     expect(galleryImages[0]).toHaveAttribute("src", "https://pub-example.r2.dev/cases/c1/photo.jpg");
   });
+
+  it("shows the case's recorded vitals and weight in the timeline", async () => {
+    apiRequestMock.mockResolvedValue(
+      baseProfile({
+        cases: [
+          {
+            id: "c1",
+            patientId: "p1",
+            type: "CONSULTATION",
+            status: "OPEN",
+            visitDate: "2026-01-05T00:00:00.000Z",
+            complaint: "Vomiting",
+            temperatureC: "38.5",
+            heartRate: 120,
+            respRate: 24,
+            clinicalNotes: null,
+            diagnosis: null,
+            templateId: null,
+            createdAt: "2026-01-05T00:00:00.000Z",
+          },
+        ],
+        weights: [
+          { id: "w1", patientId: "p1", weightKg: "12.40", recordedAt: "2026-01-05T00:00:00.000Z", caseId: "c1" },
+        ],
+      }),
+    );
+    renderPage();
+
+    expect(await screen.findByText("38.5°C · HR 120 · RR 24 · 12.4 kg")).toBeInTheDocument();
+  });
 });

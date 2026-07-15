@@ -36,6 +36,7 @@ const CASE_SUMMARY = {
   templateId: null,
   createdAt: "2026-07-13T10:00:00.000Z",
   patient: { id: "p1", name: "Bruno", species: "DOG" },
+  weightKg: null,
 };
 
 describe("TodayPage", () => {

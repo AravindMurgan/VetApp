@@ -106,4 +106,26 @@ describe("NewCasePage step navigation", () => {
 
     expect(await screen.findByLabelText(/complaint/i)).toHaveValue("Lethargy, suspected tick fever");
   });
+
+  it("moves from Details to Treatments without submitting the case", async () => {
+    apiRequestMock.mockResolvedValue({ patients: [PATIENT] });
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(await screen.findByRole("button", { name: /Bruno/i }));
+    await user.click(await screen.findByRole("button", { name: "Consultation" }));
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+
+    expect(await screen.findByRole("heading", { name: "Details" })).toBeInTheDocument();
+    apiRequestMock.mockReset();
+    apiRequestMock.mockResolvedValue({ drugNames: [] });
+
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+
+    expect(await screen.findByRole("heading", { name: "Treatments" })).toBeInTheDocument();
+    expect(apiRequestMock).not.toHaveBeenCalledWith(
+      expect.stringContaining("/cases"),
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
 });

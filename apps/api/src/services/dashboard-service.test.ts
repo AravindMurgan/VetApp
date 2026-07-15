@@ -100,3 +100,44 @@ describe("getDashboardToday due-today follow-ups", () => {
     expect(match?.patient.name).toBe("Follow-up Test Pet");
   });
 });
+
+describe("getDashboardToday weight join", () => {
+  const createdOwnerIds: string[] = [];
+
+  afterAll(async () => {
+    await prisma.weightEntry.deleteMany({ where: { patient: { ownerId: { in: createdOwnerIds } } } });
+    await prisma.case.deleteMany({ where: { patient: { ownerId: { in: createdOwnerIds } } } });
+    await prisma.patient.deleteMany({ where: { ownerId: { in: createdOwnerIds } } });
+    await prisma.owner.deleteMany({ where: { id: { in: createdOwnerIds } } });
+  });
+
+  it("attaches the case's weight entry, keyed by caseId", async () => {
+    const owner = await prisma.owner.create({
+      data: {
+        name: "Weight Join Owner",
+        phone: "5556660003",
+        patients: { create: { name: "Weight Join Pet", species: "DOG" } },
+      },
+      include: { patients: true },
+    });
+    createdOwnerIds.push(owner.id);
+    const patientId = owner.patients[0]!.id;
+
+    const now = new Date("2026-07-13T10:00:00.000Z");
+    const withWeight = await prisma.case.create({
+      data: { patientId, type: "CONSULTATION", visitDate: now },
+    });
+    const withoutWeight = await prisma.case.create({
+      data: { patientId, type: "CONSULTATION", visitDate: now },
+    });
+    await prisma.weightEntry.create({
+      data: { patientId, caseId: withWeight.id, weightKg: 12.4, recordedAt: now },
+    });
+
+    const result = await getDashboardToday("Asia/Kolkata", now);
+
+    const weightKg = result.casesToday.find((c) => c.id === withWeight.id)?.weightKg;
+    expect(Number(weightKg)).toBe(12.4);
+    expect(result.casesToday.find((c) => c.id === withoutWeight.id)?.weightKg).toBeNull();
+  });
+});

@@ -23,6 +23,7 @@ describe("dashboardTodayResponseSchema", () => {
           templateId: null,
           createdAt: "2026-07-13T10:00:00.000Z",
           patient: { id: VALID_UUID, name: "Bruno", species: "DOG" },
+          weightKg: "12.40",
         },
       ],
       followUpsDueToday: [

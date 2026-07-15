@@ -7,6 +7,7 @@ import { CASE_TYPE_LABELS } from "../lib/case-type-labels";
 import { formatAge } from "../lib/format-age";
 import { WeightChart } from "../components/WeightChart";
 import { PhotoCapture } from "../components/PhotoCapture";
+import { formatVitals } from "../lib/format-vitals";
 
 const TABS = [
   { value: "timeline", label: "Timeline" },
@@ -87,6 +88,13 @@ export default function PatientProfilePage() {
               const caseAttachments = data.attachments.filter(
                 (attachment) => attachment.caseId === caseItem.id,
               );
+              const caseWeight = data.weights.find((weight) => weight.caseId === caseItem.id);
+              const vitals = formatVitals({
+                temperatureC: caseItem.temperatureC,
+                heartRate: caseItem.heartRate,
+                respRate: caseItem.respRate,
+                weightKg: caseWeight?.weightKg ?? null,
+              });
               return (
                 <li key={caseItem.id} className="rounded-md border border-black/10 p-3">
                   <div className="flex items-center justify-between gap-2">
@@ -102,6 +110,7 @@ export default function PatientProfilePage() {
                     {new Date(caseItem.visitDate).toLocaleDateString()}
                     {caseItem.complaint ? ` · ${caseItem.complaint}` : ""}
                   </p>
+                  {vitals ? <p className="text-sm text-black/60">{vitals}</p> : null}
                   {caseAttachments.length > 0 ? (
                     <div className="mt-2 flex gap-1">
                       {caseAttachments.map((attachment) => (

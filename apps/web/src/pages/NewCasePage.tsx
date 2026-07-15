@@ -145,6 +145,7 @@ export default function NewCasePage() {
 
               {step < 4 ? (
                 <button
+                  key="next"
                   type="button"
                   disabled={step === 2 && !selectedType}
                   onClick={() => setStep((current) => current + 1)}
@@ -154,6 +155,7 @@ export default function NewCasePage() {
                 </button>
               ) : (
                 <button
+                  key="save"
                   type="submit"
                   disabled={formMethods.formState.isSubmitting}
                   className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
